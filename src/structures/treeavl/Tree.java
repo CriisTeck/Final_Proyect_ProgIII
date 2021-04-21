@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
-public class Tree<T> {
+public class Tree<T>{
     private Node<T> radix;
     private final Comparator<T> comparator;
 

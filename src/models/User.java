@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
-    private int id;
+    private String id;
     private String name;
     private Stack<Notification> listNotifications;
     private Calculator buyCalculator;
@@ -16,7 +16,7 @@ public class User {
     private long maxAmountToExpense;
     private TypeAccount role;
 
-    public User(int id, String name, TypeAccount role) {
+    public User(String id, String name, TypeAccount role) {
         this.id = id;
         this.name = name;
         this.listNotifications = new Stack<>(Notification::compare);
@@ -62,6 +62,7 @@ public class User {
 
 
     public static int compare(User t1, User t) {
-        return Integer.compare(t1.id,t.id);
+        return t1.id.compareTo(t.id);
     }
+
 }

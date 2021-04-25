@@ -6,7 +6,7 @@ public class JSONUserInfo {
     }
 
     private String readFile(){
-
+        return "";
     }
 
     private void writeFile(){
@@ -18,6 +18,6 @@ public class JSONUserInfo {
     }
 
     public static Object readJSONFile(String data){
-
+        return "";
     }
 }

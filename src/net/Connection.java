@@ -17,7 +17,7 @@ public class Connection {
     }
 
     public String readData(){
-
+        return "";
     }
 
     public void sendData(Object data){
@@ -28,8 +28,8 @@ public class Connection {
         socket.close();
     }
 
-    public boolean isRunning() {
-
+    public boolean isRunning() throws IOException {
+        return socket.getInetAddress().isReachable(100);
     }
 
 

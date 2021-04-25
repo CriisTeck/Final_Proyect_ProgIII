@@ -15,6 +15,6 @@ public class AdminController extends Client{
 
     @Override
     public void run() {
-        super.run();
+        System.out.println("ADMIN INICIADO");
     }
 }

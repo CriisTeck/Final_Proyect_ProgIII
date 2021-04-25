@@ -65,4 +65,7 @@ public class User {
         return t1.id.compareTo(t.id);
     }
 
+    public String getid() {
+        return id;
+    }
 }

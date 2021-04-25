@@ -34,7 +34,7 @@ public class FamilyGroupManager {
         return userList.searchData(new User(id, "", null));
     }
 
-    private boolean isThereAdmin() {
+    public boolean isThereAdmin() {
         return userList.getInorder().stream().anyMatch(User::isAdmin);
     }
 

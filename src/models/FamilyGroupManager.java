@@ -1,8 +1,13 @@
 package models;
 
+import exceptions.IncorrectEmailException;
 import structures.treeavl.Tree;
+import utils.Constants;
+import utils.EmailSender;
 
-import java.util.ArrayList;
+import javax.mail.MessagingException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class FamilyGroupManager {
     private Tree<User> userList;
@@ -15,12 +20,12 @@ public class FamilyGroupManager {
         userList.insert(user);
     }
 
-    public User createMember(String id, String name) {
-        return new User(id, name, TypeAccount.MEMBER);
+    public User createMember(String id, String name, String emailUser) {
+        return new User(id, name, emailUser, TypeAccount.MEMBER);
     }
 
-    public User createAdmin(String id, String name) throws Exception {
-        if (!isThereAdmin()) return new User(id, name, TypeAccount.ADMIN);
+    public User createAdmin(String id, String name, String emailUser) throws Exception {
+        if (!isThereAdmin()) return new User(id, name, emailUser, TypeAccount.ADMIN);
         else throw new Exception("CREAR EXCEPCION");
     }
 
@@ -31,7 +36,7 @@ public class FamilyGroupManager {
     }
 
     public User searchMember(String id) {
-        return userList.searchData(new User(id, "", null));
+        return userList.searchData(new User(id, "", "",null));
     }
 
     public boolean isThereAdmin() {
@@ -56,5 +61,18 @@ public class FamilyGroupManager {
 
     public void acceptMember() {
 
+    }
+
+    public void sendEmailRecover(String email) throws MessagingException, IOException, IncorrectEmailException {
+        EmailSender.sendEmail(email, Constants.SUBJECT_RECOVER_EMAIL, Constants.CONTENT_RECOVER_EMAIL + findUserPass(email));
+    }
+
+    private String findUserPass(String email) throws IncorrectEmailException {
+//        try {
+        return userList.getInorder().stream().map(User::getEmail).filter(oEmail -> oEmail.equals(email)).toString();
+
+//        }catch (Exception e){
+//            throw new IncorrectEmailException();
+//        }
     }
 }

@@ -1,12 +1,15 @@
 package controllers;
 
+import exceptions.IncorrectEmailException;
 import models.FamilyGroupManager;
 import models.User;
 import net.Connection;
 import persistence.WriterLog;
 import utils.CodeRequest;
+import utils.JSONUtils;
 import utils.TitleRequest;
 
+import javax.mail.MessagingException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,7 +41,7 @@ public class LoginAssigment_Controller extends Thread {
     public void run() {
         System.out.println("Login activado");
         try {
-            while (state)
+            while (state){
                 if (input.available() > 0) {
                     String code = readData();
                     switch (code) {
@@ -48,29 +51,35 @@ public class LoginAssigment_Controller extends Thread {
                         case CodeRequest.REQUEST_NEW_USER_CODE:
                             createNewUser();
                             break;
+                        case CodeRequest.REQUEST_CLOSE_CONEXION_CODE:
+                            socket.close();
+                            break;
+                        case CodeRequest.REQUEST_SEND_EMAIL_RECOVER_CODE:
+                            sendRecoverEmail();
+                            break;
                     }
                 }
-        } catch (IOException e) {
+                if(socket.isClosed())
+                    state = false;
+            }
+        } catch (IOException | MessagingException | IncorrectEmailException e) {
             e.printStackTrace();
         }
     }
+
 
     private void createNewUser() throws IOException {
         output.writeUTF(model.isThereAdmin()
                 ? requestToJSON(CodeRequest.THERE_IS_ADMIN_CODE, TitleRequest.THERE_IS_ADMIN_TITLE)
                 : requestToJSON(CodeRequest.THERE_ISNT_ADMIN_CODE, TitleRequest.THERE_ISNT_ADMIN_TITLE));
-        String strin = input.readUTF();
-        System.out.println(strin);
-        User newUser = (User) userFromJSON(strin, User.class);
+        User newUser = userFromJSON(input.readUTF(), User.class);
         model.addUser(newUser);
-        System.out.println("Nuevo usuario creado");
         readCredentials(newUser.getid());
     }
 
     private void readCredentials(String getId) {
         String[] credentials = getId.split("@");
         if (createClient(credentials[0], credentials[1])) state = false;
-        System.out.println(Arrays.toString(credentials));
     }
 
     private String readData() throws IOException {
@@ -78,8 +87,8 @@ public class LoginAssigment_Controller extends Thread {
     }
 
     private void readCredentials() throws IOException {
-        output.writeUTF(requestToJSON(CodeRequest.REQUEST_CREDENTIALS_CODE, TitleRequest.REQUEST_CREDENTIALS_TITLE));
         String[] credentials = (String[]) objectFromJSON(input.readUTF(), String[].class);
+        System.out.println(Arrays.toString(credentials));
         if (!createClient(credentials[0], credentials[1])) sendFailedLogin();
         else state = false;
 
@@ -101,5 +110,10 @@ public class LoginAssigment_Controller extends Thread {
 
     public Client getClient() {
         return loginClient;
+    }
+
+    private void sendRecoverEmail() throws IOException, MessagingException, IncorrectEmailException {
+        String email = (String) JSONUtils.objectFromJSON(input.readUTF(), String.class);
+        model.sendEmailRecover(email);
     }
 }

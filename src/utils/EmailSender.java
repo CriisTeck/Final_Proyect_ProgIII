@@ -32,7 +32,7 @@ public class EmailSender {
         MimeMessage message = new MimeMessage(session);
 
         message.setFrom(new InternetAddress(senderEmail));
-        message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipientEmail));
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(desencrypt(recipientEmail)));
         message.setSubject(subjectEmail);
         message.setText(textEmail);
         Transport transport = session.getTransport("smtp");

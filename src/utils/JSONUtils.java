@@ -8,7 +8,7 @@ import models.User;
 import java.io.*;
 import java.util.Comparator;
 
-import static utils.Constants.NAME_FILE_E_C;
+import static utils.StringConstants.NAME_FILE_E_C;
 import static utils.EncrypterString.*;
 
 public class JSONUtils {
@@ -46,5 +46,9 @@ public class JSONUtils {
         mss = desencrypt(br.readLine());
         return gson.fromJson(mss, String[].class)[1];
 //        return gson.fromJson(new FileReader(desencrypt(NAME_FILE_E_C)), String[].class)[1];
+    }
+
+    public static String exceptionToJSON(String exception, String message) {
+        return gson.toJson(new String[]{exception,message});
     }
 }

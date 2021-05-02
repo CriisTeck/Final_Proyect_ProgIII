@@ -73,6 +73,6 @@ public class User {
     }
 
     public String getEmail() {
-        return EncrypterString.desencrypt(emailUser);
+        return emailUser;
     }
 }

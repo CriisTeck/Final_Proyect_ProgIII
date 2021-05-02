@@ -6,7 +6,7 @@ public class EncrypterString {
 
     public static String encrypt(String toEncrypt){
         int s = toEncrypt.length();
-        int sum = doSum(toEncrypt) / s;
+        int sum = doSum(toEncrypt) / s+1;
         int mod = 1%sum;
         StringBuilder ss = new StringBuilder();
         for (int i = 0; i < s; i++) {
@@ -21,7 +21,7 @@ public class EncrypterString {
 
     public static String desencrypt(String toDesencrypt) {
         int s = toDesencrypt.length();
-        int sum = doSum(toDesencrypt) / s;
+        int sum = doSum(toDesencrypt) / s+1;
         int mod = 1%sum;
         StringBuilder ss = new StringBuilder();
         for (int i = 0; i < s; i++) {

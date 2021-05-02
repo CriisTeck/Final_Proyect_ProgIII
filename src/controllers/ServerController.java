@@ -43,7 +43,6 @@ public class ServerController implements Runnable, IObserved {
 
     @Override
     public void run() {
-        System.out.println("Hilo de login activo");
         while (true) {
             try {
                 int bound = activeLogin.size();
@@ -55,8 +54,10 @@ public class ServerController implements Runnable, IObserved {
                         activeLogin.remove(i);
                     }
                 }
-                System.out.println(activeLogin);
-            } catch (InterruptedException | IndexOutOfBoundsException e) {
+                System.out.println("Hilos login activos : " + activeLogin.size());
+                System.out.println("Hilos cliente: "+ clientList.size());
+                System.out.println("\n\n\n\n");
+            } catch (InterruptedException | IndexOutOfBoundsException | NullPointerException e) {
                 e.printStackTrace();
             }
         }

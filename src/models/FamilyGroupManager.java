@@ -2,8 +2,8 @@ package models;
 
 import exceptions.EmailAlreadyRegisteredException;
 import exceptions.EmailNotRegisteredException;
-import exceptions.IncorrectEmailException;
 import exceptions.UserAlreadyExistsException;
+import persistence.JSONUserInfo;
 import structures.treeavl.Tree;
 import utils.StringConstants;
 import utils.EmailSender;
@@ -14,14 +14,20 @@ import java.util.ArrayList;
 
 public class FamilyGroupManager {
     private Tree<User> userList;
+    private final JSONUserInfo file;
 
-    public FamilyGroupManager() {
-        userList = new Tree<>(User::compare);
+    public FamilyGroupManager() throws IOException {
+        file = new JSONUserInfo();
+        userList = read();
+        if (userList == null)
+            userList = new Tree<>(User::compare);
     }
 
-    public void addUser(User user) throws UserAlreadyExistsException, EmailAlreadyRegisteredException {
-        if (verifyUserRegistered(user)) userList.insert(user);
-        else throw new UserAlreadyExistsException();
+    public void addUser(User user) throws UserAlreadyExistsException, EmailAlreadyRegisteredException, IOException {
+        if (verifyUserRegistered(user)) {
+            userList.insert(user);
+            write();
+        } else throw new UserAlreadyExistsException();
     }
 
     private boolean verifyUserRegistered(User user) throws UserAlreadyExistsException, EmailAlreadyRegisteredException {
@@ -35,19 +41,10 @@ public class FamilyGroupManager {
         return true;
     }
 
-    public User createMember(String id, String name, String emailUser) {
-        return new User(id, name, emailUser, TypeAccount.MEMBER);
-    }
-
-    public User createAdmin(String id, String name, String emailUser) throws Exception {
-        if (!isThereAdmin()) return new User(id, name, emailUser, TypeAccount.ADMIN);
-        else throw new Exception("CREAR EXCEPCION");
-    }
-
-    public User removeMember(String id) throws Exception {
+    public void removeMember(String id) throws Exception {
         User userToDelete = searchMember(id);
         userList.remove(userToDelete);
-        return userToDelete;
+        write();
     }
 
     public User searchMember(String id) {
@@ -58,37 +55,29 @@ public class FamilyGroupManager {
         return userList.getInorder().stream().anyMatch(User::isAdmin);
     }
 
-    public void acceptDebtPayment() {
-
-    }
-
-    public void denyDebtPayment() {
-
-    }
-
-    public void setMountMaximumGeneral() {
-
-    }
-
-    public void denyMember() {
-
-    }
-
-    public void acceptMember() {
-
-    }
-
-    public void sendEmailRecover(String email) throws MessagingException, IOException, IncorrectEmailException, EmailNotRegisteredException {
+    public void sendEmailRecover(String email) throws MessagingException, IOException, EmailNotRegisteredException {
         String[] data = findUserPass(email);
         EmailSender.sendEmail(email, StringConstants.SUBJECT_RECOVER_EMAIL, String.format(StringConstants.CONTENT_RECOVER_EMAIL, data[0], data[1]));
     }
 
     private String[] findUserPass(String email) throws EmailNotRegisteredException {
         for (User user : userList.getInorder()) {
-            String em = user.getEmail();
             if (user.getEmail().equals(email))
                 return user.getid().split("@");
         }
         throw new EmailNotRegisteredException();
+    }
+
+    public ArrayList<User> getAllUsers() {
+        userList.getInorder().forEach(User::calculateDebt);
+        return userList.getInorder();
+    }
+
+    public void write() throws IOException {
+        file.writeJSONFile(userList);
+    }
+
+    private Tree<User> read() throws IOException {
+        return file.readJSONFile();
     }
 }

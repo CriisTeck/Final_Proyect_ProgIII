@@ -1,22 +1,23 @@
 package models;
 
 public class Article {
-    private int idArticle;
-    private String name;
-    private int cost;
+    private final int quantity;
+    private final int cost;
 
-    public Article(int idArticle, String name, int cost) {
+
+    private final String name;
+
+    public Article(int quantity, String name, int cost) {
         this.cost = cost;
+        this.quantity = quantity;
         this.name = name;
-        this.idArticle = idArticle;
-    }
-
-    public int getIdArticle() {
-        return idArticle;
     }
 
     public String getName() {
         return name;
+    }
+    public int getQuantity() {
+        return quantity;
     }
 
     public int getCost() {
@@ -24,6 +25,7 @@ public class Article {
     }
 
     public static int compare(Article o, Article o1) {
-        return Integer.compare(o.getIdArticle(),o1.getIdArticle());
+        return Integer.compare(o.getQuantity(),o1.getQuantity());
     }
+
 }

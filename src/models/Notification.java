@@ -54,7 +54,7 @@ public class Notification {
         this.dataParameters = dataParameters;
     }
 
-    public static int compare(Notification o, Notification o1){
-        return Integer.compare(o.getId(),o1.getId());
+    public static int compare(Notification o, Notification o1) {
+        return Integer.compare(o.getId(), o1.getId());
     }
 }

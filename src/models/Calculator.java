@@ -3,40 +3,58 @@ package models;
 import structures.stack.Stack;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Calculator {
     private Stack<Article> articleList;
+    private final Stack<Article> deletedArticles;
 
     public Calculator() {
         articleList = new Stack<>(Article::compare);
+        deletedArticles = new Stack<>(Article::compare);
     }
 
-    public void addArticle(Article article){
+    public void addArticle(Article article) {
         articleList.push(article);
     }
 
-    public Article createArticle(int idArticle, String name, int cost){
-        return new Article(idArticle,name,cost);
-    }
-
-    public Article removeLastArticle(){
-        return articleList.pop();
-    }
-
-    public int calculateTotal(){
+    public int calculateTotal() {
         Iterator<Article> iterator = articleList.iterator();
         int counterTotal = 0;
-        while (iterator.hasNext())
-            counterTotal += iterator.next().getCost();
+        while (iterator.hasNext()) {
+            Article art = iterator.next();
+            counterTotal += art.getCost()*art.getQuantity();
+        }
         return counterTotal;
     }
 
-    public void finishCalculator(){
+    public void finishCalculator() {
         articleList = new Stack<>(Article::compare);
     }
 
-    public Expense getBuyExpense(String description){
-        return new Expense(calculateTotal(), LocalDateTime.now(),TypeExpense.COMPRA,"");
+    public Expense getBuyExpense() {
+        return new Expense(calculateTotal(), LocalDateTime.now(), "");
+    }
+
+    public ArrayList<Article> getAllArticlesAsList() {
+        Iterator<Article> iterator = articleList.iterator();
+        ArrayList<Article> list = new ArrayList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        return list;
+    }
+
+    public void deleteLastArticle() {
+        Article article = articleList.pop();
+        if (article != null)
+            deletedArticles.push(article);
+    }
+
+    public void restoreArticle() {
+        Article article = deletedArticles.pop();
+        if (article != null)
+            articleList.push(article);
     }
 }

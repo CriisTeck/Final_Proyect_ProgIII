@@ -9,26 +9,28 @@ import models.User;
 import net.Connection;
 import persistence.WriterLog;
 import utils.CodeRequest;
-import utils.StringConstants;
 import utils.JSONUtils;
 import utils.MessageRequest;
+import utils.StringConstants;
 
 import javax.mail.MessagingException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import static utils.JSONUtils.*;
 
 public class LoginAssigment_Controller extends Thread {
     private Client loginClient;
-    private Socket socket;
-    private FamilyGroupManager model;
-    private WriterLog writerLog;
-    private DataInputStream input;
-    private DataOutputStream output;
+    private final Socket socket;
+    private final FamilyGroupManager model;
+    private final WriterLog writerLog;
+    private final DataInputStream input;
+    private final DataOutputStream output;
     private boolean state;
 
     public LoginAssigment_Controller(Socket socket, FamilyGroupManager model, WriterLog writerLog) throws IOException {
@@ -43,15 +45,12 @@ public class LoginAssigment_Controller extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Login activado");
         while (state) {
             try {
                 if (input.available() > 0) {
                     String[] code = readData();
-                    switch (code[0]) {
-                        case CodeRequest.REQUEST:
-                            readRequest(code[1]);
-                            break;
+                    if (CodeRequest.REQUEST.equals(code[0])) {
+                        readRequest(code[1]);
                     }
                 }
                 if (socket.isClosed())
@@ -59,8 +58,9 @@ public class LoginAssigment_Controller extends Thread {
             } catch (IOException | MessagingException | IncorrectEmailException | UserAlreadyExistsException | EmailAlreadyRegisteredException | EmailNotRegisteredException e) {
                 try {
                     output.writeUTF(JSONUtils.exceptionToJSON(CodeRequest.EXCEPTION, e.getMessage()));
+                    writerLog.writeLog("["+ LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE).replace(':','_')+"] - " + e.getLocalizedMessage()+"\n");
                 } catch (IOException ioException) {
-                    WriterLog.writeLog();
+                    e.printStackTrace();
                 }
             }
         }
@@ -90,12 +90,12 @@ public class LoginAssigment_Controller extends Thread {
                 : requestToJSON(CodeRequest.REQUEST, MessageRequest.THERE_ISNT_ADMIN_CODE));
         User newUser = userFromJSON(input.readUTF(), User.class);
         model.addUser(newUser);
-        sendSucessfullMessage(StringConstants.MESSAGE_USER_CREATED);
+        sendSucessfullMessage();
         readCredentials(newUser.getid());
     }
 
-    private void sendSucessfullMessage(String messageUserCreated) throws IOException {
-        output.writeUTF(requestToJSON(CodeRequest.ADVICE, messageUserCreated));
+    private void sendSucessfullMessage() throws IOException {
+        output.writeUTF(requestToJSON(CodeRequest.ADVICE, StringConstants.MESSAGE_USER_CREATED));
     }
 
     private void readCredentials(String getId) throws IOException {
@@ -110,7 +110,6 @@ public class LoginAssigment_Controller extends Thread {
 
     private void readCredentials() throws IOException {
         String[] credentials = (String[]) objectFromJSON(input.readUTF(), String[].class);
-        System.out.println(Arrays.toString(credentials));
         if (!createClient(credentials[0], credentials[1])) sendFailedLogin();
         else {
             state = false;
@@ -127,8 +126,8 @@ public class LoginAssigment_Controller extends Thread {
         User user = model.searchMember(userName + "@" + password);
         if (user == null) result = false;
         else loginClient = user.isAdmin()
-                ? new AdminController(writerLog, new Connection(socket, writerLog), model)
-                : new MemberController(writerLog, new Connection(socket, writerLog), user);
+                ? new AdminController(writerLog, new Connection(socket, writerLog), model, user)
+                : new MemberController(writerLog, new Connection(socket, writerLog), user, model);
         if (result) sendAdviceClientLaunched(user);
 
         return result;
@@ -150,7 +149,7 @@ public class LoginAssigment_Controller extends Thread {
         return loginClient;
     }
 
-    private void sendRecoverEmail() throws IOException, MessagingException, IncorrectEmailException, EmailNotRegisteredException {
+    private void sendRecoverEmail() throws IOException, MessagingException, EmailNotRegisteredException {
         String email = (String) JSONUtils.objectFromJSON(input.readUTF(), String.class);
         model.sendEmailRecover(email);
         sendAdvicePasswordRecoverSended();

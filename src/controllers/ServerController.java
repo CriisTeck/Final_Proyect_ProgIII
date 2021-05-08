@@ -7,16 +7,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 
 public class ServerController implements Runnable, IObserved {
-    private ServerSocket serverSocket;
+    private final ServerSocket serverSocket;
     private static final int PORT = 25850;
-    private FamilyGroupManager model;
-    private ArrayList<Client> clientList;
-    private ArrayList<LoginAssigment_Controller> activeLogin;
-    private WriterLog writerLog;
-    private Thread thisThread;
+    private final FamilyGroupManager model;
+    private final ArrayList<Client> clientList;
+    private final ArrayList<LoginAssigment_Controller> activeLogin;
+    private final WriterLog writerLog;
 
     public ServerController() throws IOException {
         serverSocket = new ServerSocket(PORT);
@@ -24,12 +22,11 @@ public class ServerController implements Runnable, IObserved {
         clientList = new ArrayList<>();
         activeLogin = new ArrayList<>();
         writerLog = new WriterLog();
-        System.out.println("Server iniciado");
         init();
     }
 
     public void init() {
-        thisThread = new Thread(this);
+        Thread thisThread = new Thread(this);
         thisThread.start();
         while (true) {
             try {
@@ -54,9 +51,6 @@ public class ServerController implements Runnable, IObserved {
                         activeLogin.remove(i);
                     }
                 }
-                System.out.println("Hilos login activos : " + activeLogin.size());
-                System.out.println("Hilos cliente: "+ clientList.size());
-                System.out.println("\n\n\n\n");
             } catch (InterruptedException | IndexOutOfBoundsException | NullPointerException e) {
                 e.printStackTrace();
             }

@@ -61,6 +61,10 @@ public class Stack<E> implements Iterable<E> {
             Node<E> actual = top;
             @Override
             public boolean hasNext() {
+                if(actual == null)
+                    return false;
+                else if(actual.getTop() == null)
+                    return true;
                 return actual.getTop() != null;
             }
 

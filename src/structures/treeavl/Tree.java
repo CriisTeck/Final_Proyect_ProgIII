@@ -50,6 +50,8 @@ public class Tree<T>{
 
     private Node<T> verifyEquilibriumFactor(Node<T> node) {
         Node<T> aux = node;
+        if(aux == null)
+            return null;
         int fe = aux.calculateEquilibriumValue();
         while (fe > 1 || fe < -1) {
             aux = evaluateRotation(node);
